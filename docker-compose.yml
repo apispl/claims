@@ -1,0 +1,14 @@
+version: '2.2'
+
+# z jakich serwisów skłąda się system, nazwa serwisu to jest nazwa z networkingu
+services:
+  mypostgres:
+    image: 'postgres:alpine'
+    environment:
+      - POSTGRES_PASSWORD=karol123
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+    volumes:
+      - C:/Proj/claims/postgres:/var/lib/postgressql/data
+    ports:
+      - "5432:5432"
