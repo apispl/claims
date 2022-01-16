@@ -1,6 +1,6 @@
-package pl.pszczolkowski.claims;
+package pl.pszczolkowski.claims.entities;
 
-enum Status {
+public enum StatusE {
 
     CREATED,
     DELETED,
