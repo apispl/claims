@@ -1,4 +1,4 @@
-package pl.pszczolkowski.claims;
+package pl.pszczolkowski.claims.core.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-class ClaimRequest {
+public class ClaimRequest {
 
+    private String identifier;
     private String name;
     private String content;
 

@@ -1,4 +1,4 @@
-package pl.pszczolkowski.claims.entities;
+package pl.pszczolkowski.claims.core.entities;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

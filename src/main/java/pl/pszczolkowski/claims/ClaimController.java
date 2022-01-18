@@ -3,15 +3,17 @@ package pl.pszczolkowski.claims;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import pl.pszczolkowski.claims.entities.Claim;
-import pl.pszczolkowski.claims.exceptions.ClaimNotFoundException;
+import pl.pszczolkowski.claims.core.ClaimService;
+import pl.pszczolkowski.claims.core.dto.ClaimDTO;
+import pl.pszczolkowski.claims.core.dto.ClaimRequest;
+import pl.pszczolkowski.claims.core.exceptions.ClaimContentCannotBeChangedException;
+import pl.pszczolkowski.claims.core.exceptions.ClaimNotFoundException;
 
 @RestController
 @RequestMapping("/claim")
@@ -25,9 +27,9 @@ public class ClaimController {
     }
 
     @GetMapping
-    public ResponseEntity<ClaimDTO> getClaimByName(@RequestParam String claimName) throws ClaimNotFoundException {
-        log.info("Get Claim: {}", claimName);
-        ClaimDTO claimDto = claimService.getClaimByName(claimName);
+    public ResponseEntity<ClaimDTO> getClaimByName(@RequestParam String claimIdentifier) throws ClaimNotFoundException {
+        log.info("Get Claim: {}", claimIdentifier);
+        ClaimDTO claimDto = claimService.getClaimByIdentifier(claimIdentifier);
         return ResponseEntity.ok(claimDto);
     }
 
@@ -38,10 +40,11 @@ public class ClaimController {
         return ResponseEntity.ok(claimDTO);
     }
 
-    @PutMapping
-    public ResponseEntity<ClaimDTO> editClaim(@RequestBody ClaimDTO claimDTO) throws ClaimContentCannotBeChanged, ClaimNotFoundException {
-        log.info("Edit Claim request: {}", claimDTO);
-        ClaimDTO claimDtoResponse = claimService.editClaim(claimDTO);
+    @PatchMapping
+    public ResponseEntity<ClaimDTO> editClaimContent(@RequestParam String claimIdentifier,
+                                                     @RequestParam String claimContent) throws ClaimContentCannotBeChangedException, ClaimNotFoundException {
+        log.info("Edit Claim content: {}", claimIdentifier);
+        ClaimDTO claimDtoResponse = claimService.editClaim(claimIdentifier, claimContent);
         return ResponseEntity.ok(claimDtoResponse);
     }
 }

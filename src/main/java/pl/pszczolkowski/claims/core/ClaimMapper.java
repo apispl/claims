@@ -1,14 +1,14 @@
-package pl.pszczolkowski.claims;
+package pl.pszczolkowski.claims.core;
 
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import pl.pszczolkowski.claims.entities.Claim;
+import pl.pszczolkowski.claims.core.dto.ClaimDTO;
+import pl.pszczolkowski.claims.core.entities.Claim;
 
 @Mapper
-public interface ClaimMapper {
+interface ClaimMapper {
 
     Claim dtoToClaim(ClaimDTO claimDto);
     ClaimDTO claimToDto(Claim claim);

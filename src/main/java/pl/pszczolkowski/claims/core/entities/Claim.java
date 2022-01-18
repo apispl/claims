@@ -1,4 +1,4 @@
-package pl.pszczolkowski.claims.entities;
+package pl.pszczolkowski.claims.core.entities;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,6 +33,9 @@ public class Claim {
     private Long id;
 
     @Column(nullable = false, unique = true)
+    private String identifier;
+
+    @Column(nullable = false)
     private String name;
 
     @Column(nullable = false)
