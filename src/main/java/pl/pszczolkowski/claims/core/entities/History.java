@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -31,7 +33,10 @@ public class History {
     @JoinColumn(name = "claim_id", nullable = false)
     private Claim claim;
 
-    private LocalDateTime actionTime;
+    private LocalDateTime actionTime = LocalDateTime.now();
 
+    @Enumerated(EnumType.STRING)
     private ActionE actionClaim;
+
+    private String optionalReason;
 }

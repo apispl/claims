@@ -48,7 +48,4 @@ public class Claim {
     @JoinColumn(name = "sharing_number_id", referencedColumnName = "id")
     private SharingNumber sharingNumber;
 
-    @OneToMany(mappedBy = "claim", fetch = FetchType.LAZY)
-    private Set<History> history;
-
 }

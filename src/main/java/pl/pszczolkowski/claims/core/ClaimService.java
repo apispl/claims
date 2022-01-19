@@ -4,7 +4,9 @@ import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Service;
 import pl.pszczolkowski.claims.core.dto.ClaimDTO;
 import pl.pszczolkowski.claims.core.dto.ClaimRequest;
+import pl.pszczolkowski.claims.core.entities.ActionE;
 import pl.pszczolkowski.claims.core.entities.Claim;
+import pl.pszczolkowski.claims.core.entities.History;
 import pl.pszczolkowski.claims.core.entities.StatusE;
 import pl.pszczolkowski.claims.core.exceptions.ClaimContentCannotBeChangedException;
 import pl.pszczolkowski.claims.core.exceptions.ClaimNotFoundException;
@@ -17,9 +19,12 @@ public class ClaimService {
 
     private final ClaimMapper claimMapper = Mappers.getMapper(ClaimMapper.class);
     private final ClaimRepository claimRepository;
+    private final HistoryRepository historyRepository;
 
-    public ClaimService(ClaimRepository claimRepository) {
+    public ClaimService(ClaimRepository claimRepository,
+                        HistoryRepository historyRepository) {
         this.claimRepository = claimRepository;
+        this.historyRepository = historyRepository;
     }
 
     public ClaimDTO getClaimByIdentifier(String claimIdentifier) throws ClaimNotFoundException {
@@ -34,14 +39,19 @@ public class ClaimService {
     public ClaimDTO saveClaim(ClaimRequest claimRequest) {
         //TODO validation for request
 
-        Claim claimMapped = Claim.builder()
+        Claim savedClaim = Claim.builder()
                 .identifier(claimRequest.getIdentifier())
                 .name(claimRequest.getName())
                 .content(claimRequest.getContent())
                 .status(StatusE.CREATED)
                 .build();
 
-        Claim claim = claimRepository.save(claimMapped);
+        Claim claim = claimRepository.save(savedClaim);
+
+        historyRepository.save(History.builder()
+                .claim(savedClaim)
+                .actionClaim(ActionE.CREATE).build());
+
         return claimMapper.claimToDto(claim);
     }
 
@@ -60,6 +70,10 @@ public class ClaimService {
 
         claimMapper.updateClaimFromDto(ClaimDTO.builder().content(claimContent).build(), claim);
         Claim updatedClaim = claimRepository.save(claim);
+
+        historyRepository.save(History.builder()
+                .claim(updatedClaim)
+                .actionClaim(ActionE.EDIT).build());
 
         return claimMapper.claimToDto(updatedClaim);
     }

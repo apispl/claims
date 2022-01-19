@@ -7,7 +7,8 @@ public enum ActionE {
     VERIFY(true),
     REJECT(false),
     ACCEPT(true),
-    PUBLISH(true);
+    PUBLISH(true),
+    EDIT(true);
 
     public final boolean isPositive;
 

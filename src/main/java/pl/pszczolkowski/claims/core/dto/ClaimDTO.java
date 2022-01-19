@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import pl.pszczolkowski.claims.core.entities.SharingNumber;
 import pl.pszczolkowski.claims.core.entities.StatusE;
 
 @Data
@@ -17,5 +18,6 @@ public class ClaimDTO {
  private String name;
  private String content;
  private StatusE status;
+ private SharingNumber sharingNumber;
 
 }
