@@ -22,14 +22,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DataJpaTest
-@Import({ClaimService.class, ClaimProcessor.class})
-class BusinessRequirementsTest {
+@Import(ClaimFacade.class)
+class ClaimFacadeBusinessTest {
 
     @Autowired
-    ClaimService claimService;
-
-    @Autowired
-    ClaimProcessor claimProcessor;
+    ClaimFacade claimFacade;
 
     @Autowired
     HistoryRepository historyRepository;
@@ -42,9 +39,9 @@ class BusinessRequirementsTest {
                 .content("This is the content of Government Claim")
                 .build();
 
-        claimService.saveClaim(claimRequest);
+        claimFacade.saveClaim(claimRequest);
 
-        ClaimDTO claimDTO = claimService.getClaimByIdentifier("claim/1");
+        ClaimDTO claimDTO = claimFacade.getClaimByIdentifier("claim/1");
 
         assertThat(claimDTO.getContent()).isNotEmpty();
         assertThat(claimDTO.getName()).isNotEmpty();
@@ -55,7 +52,7 @@ class BusinessRequirementsTest {
         ClaimRequest claimRequest = ClaimRequest.builder().build();
 
         DataIntegrityViolationException dataIntegrityViolationException =
-                assertThrows(DataIntegrityViolationException.class, () -> claimService.saveClaim(claimRequest));
+                assertThrows(DataIntegrityViolationException.class, () -> claimFacade.saveClaim(claimRequest));
 
         assertNotNull(dataIntegrityViolationException);
     }
@@ -68,9 +65,9 @@ class BusinessRequirementsTest {
                 .content("This is the content of Government Claim")
                 .build();
 
-        ClaimDTO claimDTO = claimService.saveClaim(claimRequest);
+        ClaimDTO claimDTO = claimFacade.saveClaim(claimRequest);
 
-        ClaimDTO responseClaimDto = claimService.editClaim(claimDTO.getIdentifier(), "EDITED");
+        ClaimDTO responseClaimDto = claimFacade.editClaim(claimDTO.getIdentifier(), "EDITED");
 
         assertThat(responseClaimDto.getContent()).isEqualTo("EDITED");
     }
@@ -83,18 +80,18 @@ class BusinessRequirementsTest {
                 .content("This is the content of Government Claim")
                 .build();
 
-        ClaimDTO claimDTO = claimService.saveClaim(claimRequest);
+        ClaimDTO claimDTO = claimFacade.saveClaim(claimRequest);
 
-        claimProcessor.process(ClaimProcessRequest.builder()
+        claimFacade.process(ClaimProcessRequest.builder()
                 .claimIdentifier("claim/1")
                 .action(ActionE.VERIFY).build());
-        claimProcessor.process(ClaimProcessRequest.builder()
+        claimFacade.process(ClaimProcessRequest.builder()
                 .claimIdentifier("claim/1")
                 .action(ActionE.ACCEPT).build());
 
         claimDTO.setContent("EDITED");
 
-        assertThrows(ClaimContentCannotBeChangedException.class, () -> claimService.editClaim(claimDTO.getIdentifier(), "EDITED"));
+        assertThrows(ClaimContentCannotBeChangedException.class, () -> claimFacade.editClaim(claimDTO.getIdentifier(), "EDITED"));
     }
 
     @Test
@@ -105,9 +102,9 @@ class BusinessRequirementsTest {
                 .content("This is the content of Government Claim")
                 .build();
 
-        claimService.saveClaim(claimRequest);
+        claimFacade.saveClaim(claimRequest);
 
-        claimProcessor.process(ClaimProcessRequest.builder()
+        claimFacade.process(ClaimProcessRequest.builder()
                 .claimIdentifier("claim/1")
                 .optionalReason("reason")
                 .action(ActionE.DELETE).build());
@@ -128,9 +125,9 @@ class BusinessRequirementsTest {
                 .content("This is the content of Government Claim")
                 .build();
 
-        claimService.saveClaim(claimRequest);
+        claimFacade.saveClaim(claimRequest);
 
-        assertThrows(ReasonForActionRequired.class, () -> claimProcessor.process(ClaimProcessRequest.builder()
+        assertThrows(ReasonForActionRequired.class, () -> claimFacade.process(ClaimProcessRequest.builder()
                 .claimIdentifier("claim/1")
                 .action(ActionE.DELETE).build()));
     }
@@ -143,24 +140,24 @@ class BusinessRequirementsTest {
                 .content("This is the content of Government Claim")
                 .build();
 
-        claimService.saveClaim(claimRequest);
+        claimFacade.saveClaim(claimRequest);
 
-        claimProcessor.process(ClaimProcessRequest.builder()
+        claimFacade.process(ClaimProcessRequest.builder()
                 .claimIdentifier("claim/1")
                 .optionalReason("reason")
                 .action(ActionE.VERIFY).build());
 
-        claimProcessor.process(ClaimProcessRequest.builder()
+        claimFacade.process(ClaimProcessRequest.builder()
                 .claimIdentifier("claim/1")
                 .optionalReason("reason")
                 .action(ActionE.ACCEPT).build());
 
-        claimProcessor.process(ClaimProcessRequest.builder()
+        claimFacade.process(ClaimProcessRequest.builder()
                 .claimIdentifier("claim/1")
                 .optionalReason("reason")
                 .action(ActionE.PUBLISH).build());
 
-        ClaimDTO claimByIdentifier = claimService.getClaimByIdentifier("claim/1");
+        ClaimDTO claimByIdentifier = claimFacade.getClaimByIdentifier("claim/1");
 
         assertThat(claimByIdentifier.getSharingNumber()).isNotNull();
     }
