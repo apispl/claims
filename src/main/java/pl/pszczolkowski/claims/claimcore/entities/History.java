@@ -1,9 +1,10 @@
-package pl.pszczolkowski.claims.core.entities;
+package pl.pszczolkowski.claims.claimcore.entities;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import pl.pszczolkowski.claims.claimcore.enums.ActionE;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;

@@ -1,7 +1,7 @@
-package pl.pszczolkowski.claims.core.dto;
+package pl.pszczolkowski.claims.claimcore.dto;
 
 import lombok.Data;
-import pl.pszczolkowski.claims.core.entities.StatusE;
+import pl.pszczolkowski.claims.claimcore.statemachine.StatusE;
 
 @Data
 public class ClaimRequestParams {

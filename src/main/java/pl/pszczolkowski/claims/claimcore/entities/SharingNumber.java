@@ -1,5 +1,6 @@
-package pl.pszczolkowski.claims.core.entities;
+package pl.pszczolkowski.claims.claimcore.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +23,7 @@ public class SharingNumber {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonIgnore
     private Long id;
 
     @Column(name = "UNIQUE_SHARING_NUMBER", unique = true, nullable = false)

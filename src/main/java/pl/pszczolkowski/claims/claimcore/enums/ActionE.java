@@ -1,4 +1,4 @@
-package pl.pszczolkowski.claims.core.entities;
+package pl.pszczolkowski.claims.claimcore.enums;
 
 public enum ActionE {
 

@@ -1,19 +1,17 @@
-package pl.pszczolkowski.claims.core;
+package pl.pszczolkowski.claims.claimcore;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
-import pl.pszczolkowski.claims.core.dto.ClaimDTO;
-import pl.pszczolkowski.claims.core.dto.ClaimProcessRequest;
-import pl.pszczolkowski.claims.core.dto.ClaimRequest;
-import pl.pszczolkowski.claims.core.entities.ActionE;
-import pl.pszczolkowski.claims.core.entities.History;
-import pl.pszczolkowski.claims.core.exceptions.ClaimContentCannotBeChangedException;
-import pl.pszczolkowski.claims.core.exceptions.ClaimNotFoundException;
-import pl.pszczolkowski.claims.core.exceptions.ClaimProcessingException;
-import pl.pszczolkowski.claims.core.exceptions.ReasonForActionRequired;
+import pl.pszczolkowski.claims.claimcore.dto.ClaimDTO;
+import pl.pszczolkowski.claims.claimcore.dto.ClaimProcessRequest;
+import pl.pszczolkowski.claims.claimcore.dto.ClaimRequest;
+import pl.pszczolkowski.claims.claimcore.enums.ActionE;
+import pl.pszczolkowski.claims.claimcore.entities.History;
+import pl.pszczolkowski.claims.claimcore.exceptions.ClaimNotFoundException;
+import pl.pszczolkowski.claims.claimcore.exceptions.ClaimProcessingException;
 
 import java.util.List;
 
@@ -58,7 +56,7 @@ class ClaimFacadeBusinessTest {
     }
 
     @Test
-    void shouldEditClaim() throws ClaimContentCannotBeChangedException, ClaimNotFoundException {
+    void shouldEditClaim() throws ClaimNotFoundException, ClaimProcessingException {
         //given
         ClaimDTO claimDTO = saveClaim();
 
@@ -70,7 +68,7 @@ class ClaimFacadeBusinessTest {
     }
 
     @Test
-    void shouldNotEditClaim() throws ClaimNotFoundException, ClaimProcessingException, ReasonForActionRequired {
+    void shouldNotEditClaim() throws ClaimNotFoundException, ClaimProcessingException {
         //given
         ClaimDTO claimDTO = saveClaim();
 
@@ -86,11 +84,11 @@ class ClaimFacadeBusinessTest {
         claimDTO.setContent("EDITED");
 
         //then
-        assertThrows(ClaimContentCannotBeChangedException.class, () -> claimFacade.editClaim(claimDTO.getIdentifier(), "EDITED"));
+        assertThrows(ClaimProcessingException.class, () -> claimFacade.editClaim(claimDTO.getIdentifier(), "EDITED"));
     }
 
     @Test
-    void shouldSaveReason_WhenProcessNegative() throws ClaimNotFoundException, ClaimProcessingException, ReasonForActionRequired {
+    void shouldSaveReason_WhenProcessNegative() throws ClaimNotFoundException, ClaimProcessingException {
         //given
         saveClaim();
 
@@ -115,13 +113,13 @@ class ClaimFacadeBusinessTest {
         saveClaim();
 
         //when/then
-        assertThrows(ReasonForActionRequired.class, () -> claimFacade.process(ClaimProcessRequest.builder()
+        assertThrows(ClaimProcessingException.class, () -> claimFacade.process(ClaimProcessRequest.builder()
                 .claimIdentifier("claim/1")
                 .action(ActionE.DELETE).build()));
     }
 
     @Test
-    void shouldAddSharingNumber_WhenPublish() throws ReasonForActionRequired, ClaimNotFoundException, ClaimProcessingException {
+    void shouldAddSharingNumber_WhenPublish() throws ClaimNotFoundException, ClaimProcessingException {
         //given
         saveClaim();
 
@@ -145,6 +143,18 @@ class ClaimFacadeBusinessTest {
 
         //then
         assertThat(claimByIdentifier.getSharingNumber()).isNotNull();
+    }
+
+    @Test
+    void shouldNotProcessNotAllowedAction() {
+        //given
+        saveClaim();
+
+        //when/then
+        assertThrows(ClaimProcessingException.class, () -> claimFacade.process(ClaimProcessRequest.builder()
+                .claimIdentifier("claim/1")
+                .optionalReason("reason")
+                .action(ActionE.ACCEPT).build()));
     }
 
     private ClaimDTO saveClaim() {

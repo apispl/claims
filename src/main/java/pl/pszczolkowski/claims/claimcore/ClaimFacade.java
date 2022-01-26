@@ -1,20 +1,19 @@
-package pl.pszczolkowski.claims.core;
+package pl.pszczolkowski.claims.claimcore;
 
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import pl.pszczolkowski.claims.core.dto.ClaimDTO;
-import pl.pszczolkowski.claims.core.dto.ClaimProcessRequest;
-import pl.pszczolkowski.claims.core.dto.ClaimRequest;
-import pl.pszczolkowski.claims.core.dto.ClaimRequestParams;
-import pl.pszczolkowski.claims.core.entities.ActionE;
-import pl.pszczolkowski.claims.core.entities.Claim;
-import pl.pszczolkowski.claims.core.entities.SharingNumber;
-import pl.pszczolkowski.claims.core.entities.StatusE;
-import pl.pszczolkowski.claims.core.exceptions.ClaimContentCannotBeChangedException;
-import pl.pszczolkowski.claims.core.exceptions.ClaimNotFoundException;
-import pl.pszczolkowski.claims.core.exceptions.ClaimProcessingException;
-import pl.pszczolkowski.claims.core.exceptions.ReasonForActionRequired;
+import pl.pszczolkowski.claims.claimcore.dto.ClaimDTO;
+import pl.pszczolkowski.claims.claimcore.dto.ClaimProcessRequest;
+import pl.pszczolkowski.claims.claimcore.dto.ClaimRequest;
+import pl.pszczolkowski.claims.claimcore.dto.ClaimRequestParams;
+import pl.pszczolkowski.claims.claimcore.enums.ActionE;
+import pl.pszczolkowski.claims.claimcore.entities.Claim;
+import pl.pszczolkowski.claims.claimcore.entities.SharingNumber;
+import pl.pszczolkowski.claims.claimcore.statemachine.StatusE;
+import pl.pszczolkowski.claims.claimcore.exceptions.ClaimNotFoundException;
+import pl.pszczolkowski.claims.claimcore.exceptions.ClaimProcessingException;
+import pl.pszczolkowski.claims.utils.ValidatorClaim;
 
 import java.util.UUID;
 
@@ -54,16 +53,13 @@ public class ClaimFacade {
         return claimMapper.claimToDto(claim);
     }
 
-    public ClaimDTO editClaim(String claimIdentifier, String claimContent) throws ClaimContentCannotBeChangedException, ClaimNotFoundException {
+    public ClaimDTO editClaim(String claimIdentifier, String claimContent) throws ClaimNotFoundException, ClaimProcessingException {
         Claim claim = claimRepository
                 .findClaimByIdentifier(claimIdentifier)
                 .orElseThrow(ClaimNotFoundException::new);
 
         //TODO validation only if claim status is CREATED, VERIFIED
-        boolean isContentChanged = !claimContent.equals(claim.getContent());
-        if (isContentChanged && claim.isNotInStatus(StatusE.CREATED) && claim.isNotInStatus(StatusE.VERIFIED)) {
-            throw new ClaimContentCannotBeChangedException();
-        }
+        ValidatorClaim.checkIsActionAllowed(ActionE.EDIT, claim.getStatus());
 
         claimMapper.updateClaimFromDto(ClaimDTO.builder().content(claimContent).build(), claim);
         Claim updatedClaim = claimRepository.save(claim);
@@ -72,19 +68,21 @@ public class ClaimFacade {
         return claimMapper.claimToDto(updatedClaim);
     }
 
-    public ClaimDTO process(ClaimProcessRequest claimProcessRequest) throws ClaimNotFoundException, ClaimProcessingException, ReasonForActionRequired {
+    public ClaimDTO process(ClaimProcessRequest claimProcessRequest) throws ClaimNotFoundException, ClaimProcessingException {
         Claim claim = claimRepository
                 .findClaimByIdentifier(claimProcessRequest.getClaimIdentifier())
                 .orElseThrow(ClaimNotFoundException::new);
 
         StatusE status = claim.getStatus();
+        ValidatorClaim.checkIsActionAllowed(claimProcessRequest.getAction(), status);
+
         if (claimProcessRequest.getAction().isPositive) {
             status = status.positiveProcess();
 
             historyService.archive(claimProcessRequest.getAction(), claim);
             addSharingNumberIfActionPublish(claimProcessRequest, claim);
         } else {
-            optionalReasonCannotBeNull(claimProcessRequest);
+            ValidatorClaim.checkIsStringNull(claimProcessRequest.getOptionalReason());
 
             status = status.negativeProcess();
             historyService.archiveWithReason(claimProcessRequest.getAction(), claim, claimProcessRequest.getOptionalReason());
@@ -97,15 +95,9 @@ public class ClaimFacade {
 
     }
 
-    private void optionalReasonCannotBeNull(ClaimProcessRequest claimProcessRequest) throws ReasonForActionRequired {
-        if (claimProcessRequest.getOptionalReason() == null)
-            throw new ReasonForActionRequired("Reason cannot be null.");
-    }
-
     private void addSharingNumberIfActionPublish(ClaimProcessRequest claimProcessRequest, Claim claim) {
-        if (ActionE.PUBLISH.equals(claimProcessRequest.getAction())){
+        if (ActionE.PUBLISH.equals(claimProcessRequest.getAction()))
             claim.setSharingNumber(SharingNumber.builder().uuid(UUID.randomUUID().toString()).build());
-        }
     }
 
 }

@@ -1,4 +1,4 @@
-package pl.pszczolkowski.claims.core.exceptions;
+package pl.pszczolkowski.claims.claimcore.exceptions;
 
 public class ClaimNotFoundException extends Exception {
 

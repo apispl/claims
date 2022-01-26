@@ -1,11 +1,11 @@
-package pl.pszczolkowski.claims.core.dto;
+package pl.pszczolkowski.claims.claimcore.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import pl.pszczolkowski.claims.core.entities.SharingNumber;
-import pl.pszczolkowski.claims.core.entities.StatusE;
+import pl.pszczolkowski.claims.claimcore.entities.SharingNumber;
+import pl.pszczolkowski.claims.claimcore.statemachine.StatusE;
 
 @Data
 @Builder

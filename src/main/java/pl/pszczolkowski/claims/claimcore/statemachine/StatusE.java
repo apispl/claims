@@ -1,10 +1,15 @@
-package pl.pszczolkowski.claims.core.entities;
+package pl.pszczolkowski.claims.claimcore.statemachine;
 
-import pl.pszczolkowski.claims.core.exceptions.ClaimProcessingException;
+import pl.pszczolkowski.claims.claimcore.entities.StatusProcess;
+import pl.pszczolkowski.claims.claimcore.enums.ActionE;
+import pl.pszczolkowski.claims.claimcore.exceptions.ClaimProcessingException;
+
+import java.util.Collections;
+import java.util.List;
 
 public enum StatusE implements StatusProcess<StatusE> {
 
-    CREATED {
+    CREATED(List.of(ActionE.DELETE, ActionE.VERIFY, ActionE.EDIT)) {
         @Override
         public StatusE positiveProcess() {
             return StatusE.VERIFIED;
@@ -15,7 +20,7 @@ public enum StatusE implements StatusProcess<StatusE> {
             return StatusE.DELETED;
         }
     },
-    DELETED {
+    DELETED(Collections.emptyList()) {
         @Override
         public StatusE positiveProcess() throws ClaimProcessingException {
             throw new ClaimProcessingException(OPERATION_NOT_SUPPORTED);
@@ -26,7 +31,7 @@ public enum StatusE implements StatusProcess<StatusE> {
             throw new ClaimProcessingException(OPERATION_NOT_SUPPORTED);
         }
     },
-    VERIFIED {
+    VERIFIED(List.of(ActionE.REJECT, ActionE.ACCEPT, ActionE.EDIT)) {
         @Override
         public StatusE positiveProcess() {
             return StatusE.ACCEPTED;
@@ -37,7 +42,7 @@ public enum StatusE implements StatusProcess<StatusE> {
             return StatusE.REJECTED;
         }
     },
-    REJECTED {
+    REJECTED(Collections.emptyList()) {
         @Override
         public StatusE positiveProcess() throws ClaimProcessingException {
             throw new ClaimProcessingException(OPERATION_NOT_SUPPORTED);
@@ -48,7 +53,7 @@ public enum StatusE implements StatusProcess<StatusE> {
             throw new ClaimProcessingException(OPERATION_NOT_SUPPORTED);
         }
     },
-    ACCEPTED {
+    ACCEPTED(List.of(ActionE.REJECT, ActionE.PUBLISH)) {
         @Override
         public StatusE positiveProcess() {
             return StatusE.PUBLISHED;
@@ -59,7 +64,7 @@ public enum StatusE implements StatusProcess<StatusE> {
             return StatusE.REJECTED;
         }
     },
-    PUBLISHED {
+    PUBLISHED(Collections.emptyList()) {
         @Override
         public StatusE positiveProcess() throws ClaimProcessingException {
             throw new ClaimProcessingException(OPERATION_NOT_SUPPORTED);
@@ -71,6 +76,11 @@ public enum StatusE implements StatusProcess<StatusE> {
         }
     };
 
+    public final List<ActionE> allowedActions;
+
     public static final String OPERATION_NOT_SUPPORTED = "Operation not supported.";
 
+    StatusE(List<ActionE> allowedActions) {
+        this.allowedActions = allowedActions;
+    }
 }

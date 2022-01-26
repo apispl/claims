@@ -11,15 +11,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import pl.pszczolkowski.claims.core.ClaimFacade;
-import pl.pszczolkowski.claims.core.dto.ClaimDTO;
-import pl.pszczolkowski.claims.core.dto.ClaimProcessRequest;
-import pl.pszczolkowski.claims.core.dto.ClaimRequest;
-import pl.pszczolkowski.claims.core.dto.ClaimRequestParams;
-import pl.pszczolkowski.claims.core.exceptions.ClaimContentCannotBeChangedException;
-import pl.pszczolkowski.claims.core.exceptions.ClaimNotFoundException;
-import pl.pszczolkowski.claims.core.exceptions.ClaimProcessingException;
-import pl.pszczolkowski.claims.core.exceptions.ReasonForActionRequired;
+import pl.pszczolkowski.claims.claimcore.ClaimFacade;
+import pl.pszczolkowski.claims.claimcore.dto.ClaimDTO;
+import pl.pszczolkowski.claims.claimcore.dto.ClaimProcessRequest;
+import pl.pszczolkowski.claims.claimcore.dto.ClaimRequest;
+import pl.pszczolkowski.claims.claimcore.dto.ClaimRequestParams;
+import pl.pszczolkowski.claims.claimcore.exceptions.ClaimNotFoundException;
+import pl.pszczolkowski.claims.claimcore.exceptions.ClaimProcessingException;
 import pl.pszczolkowski.claims.utils.PageDefaultUtils;
 
 @RestController
@@ -58,7 +56,7 @@ class ClaimController {
 
     @PatchMapping
     public ResponseEntity<ClaimDTO> editClaimContent(@RequestParam String claimIdentifier,
-                                                     @RequestParam String claimContent) throws ClaimContentCannotBeChangedException, ClaimNotFoundException {
+                                                     @RequestParam String claimContent) throws ClaimNotFoundException, ClaimProcessingException {
         log.info("Edit Claim content: {}", claimIdentifier);
         ClaimDTO claimDtoResponse = claimFacade.editClaim(claimIdentifier, claimContent);
 
@@ -66,7 +64,7 @@ class ClaimController {
     }
 
     @PatchMapping("/process")
-    public ResponseEntity<ClaimDTO> processClaim(@RequestBody ClaimProcessRequest claimProcessRequest) throws ClaimNotFoundException, ClaimProcessingException, ReasonForActionRequired {
+    public ResponseEntity<ClaimDTO> processClaim(@RequestBody ClaimProcessRequest claimProcessRequest) throws ClaimNotFoundException, ClaimProcessingException {
         log.info("Process Claim: {}", claimProcessRequest);
         ClaimDTO result = claimFacade.process(claimProcessRequest);
         return ResponseEntity.ok(result);

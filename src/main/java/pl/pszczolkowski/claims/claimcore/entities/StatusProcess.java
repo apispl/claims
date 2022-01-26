@@ -1,6 +1,6 @@
-package pl.pszczolkowski.claims.core.entities;
+package pl.pszczolkowski.claims.claimcore.entities;
 
-import pl.pszczolkowski.claims.core.exceptions.ClaimProcessingException;
+import pl.pszczolkowski.claims.claimcore.exceptions.ClaimProcessingException;
 
 public interface StatusProcess<T> {
 

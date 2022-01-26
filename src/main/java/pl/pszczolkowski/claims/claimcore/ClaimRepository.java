@@ -1,8 +1,8 @@
-package pl.pszczolkowski.claims.core;
+package pl.pszczolkowski.claims.claimcore;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import pl.pszczolkowski.claims.core.entities.Claim;
+import pl.pszczolkowski.claims.claimcore.entities.Claim;
 
 import java.util.Optional;
 

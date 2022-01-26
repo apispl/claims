@@ -1,8 +1,8 @@
-package pl.pszczolkowski.claims.core;
+package pl.pszczolkowski.claims.claimcore;
 
-import pl.pszczolkowski.claims.core.entities.ActionE;
-import pl.pszczolkowski.claims.core.entities.Claim;
-import pl.pszczolkowski.claims.core.entities.History;
+import pl.pszczolkowski.claims.claimcore.enums.ActionE;
+import pl.pszczolkowski.claims.claimcore.entities.Claim;
+import pl.pszczolkowski.claims.claimcore.entities.History;
 
 import java.time.LocalDateTime;
 

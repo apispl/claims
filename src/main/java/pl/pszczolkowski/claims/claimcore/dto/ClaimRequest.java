@@ -1,4 +1,4 @@
-package pl.pszczolkowski.claims.core.dto;
+package pl.pszczolkowski.claims.claimcore.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

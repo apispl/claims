@@ -1,4 +1,4 @@
-package pl.pszczolkowski.claims.core;
+package pl.pszczolkowski.claims.claimcore;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

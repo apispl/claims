@@ -1,8 +1,8 @@
-package pl.pszczolkowski.claims.core;
+package pl.pszczolkowski.claims.claimcore;
 
 import org.springframework.data.jpa.domain.Specification;
-import pl.pszczolkowski.claims.core.entities.Claim;
-import pl.pszczolkowski.claims.core.entities.StatusE;
+import pl.pszczolkowski.claims.claimcore.entities.Claim;
+import pl.pszczolkowski.claims.claimcore.statemachine.StatusE;
 
 class ClaimSpecification {
 

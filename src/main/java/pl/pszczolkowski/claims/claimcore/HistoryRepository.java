@@ -1,7 +1,7 @@
-package pl.pszczolkowski.claims.core;
+package pl.pszczolkowski.claims.claimcore;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import pl.pszczolkowski.claims.core.entities.History;
+import pl.pszczolkowski.claims.claimcore.entities.History;
 
 import java.util.List;
 

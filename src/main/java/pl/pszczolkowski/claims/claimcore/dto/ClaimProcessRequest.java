@@ -1,10 +1,10 @@
-package pl.pszczolkowski.claims.core.dto;
+package pl.pszczolkowski.claims.claimcore.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import pl.pszczolkowski.claims.core.entities.ActionE;
+import pl.pszczolkowski.claims.claimcore.enums.ActionE;
 
 @Data
 @Builder
