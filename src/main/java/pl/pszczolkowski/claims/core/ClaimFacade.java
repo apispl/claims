@@ -9,7 +9,6 @@ import pl.pszczolkowski.claims.core.dto.ClaimRequest;
 import pl.pszczolkowski.claims.core.dto.ClaimRequestParams;
 import pl.pszczolkowski.claims.core.entities.ActionE;
 import pl.pszczolkowski.claims.core.entities.Claim;
-import pl.pszczolkowski.claims.core.entities.History;
 import pl.pszczolkowski.claims.core.entities.SharingNumber;
 import pl.pszczolkowski.claims.core.entities.StatusE;
 import pl.pszczolkowski.claims.core.exceptions.ClaimContentCannotBeChangedException;
@@ -23,15 +22,14 @@ public class ClaimFacade {
 
     private final ClaimMapper claimMapper = Mappers.getMapper(ClaimMapper.class);
     private final ClaimRepository claimRepository;
-    private final HistoryRepository historyRepository;
+    private final HistoryService historyService;
 
-    public ClaimFacade(ClaimRepository claimRepository, HistoryRepository historyRepository) {
+    public ClaimFacade(ClaimRepository claimRepository, HistoryService historyService) {
         this.claimRepository = claimRepository;
-        this.historyRepository = historyRepository;
+        this.historyService = historyService;
     }
 
     public ClaimDTO getClaimByIdentifier(String claimIdentifier) throws ClaimNotFoundException {
-
         Claim claim = claimRepository
                 .findClaimByIdentifier(claimIdentifier)
                 .orElseThrow(ClaimNotFoundException::new);
@@ -47,18 +45,11 @@ public class ClaimFacade {
     }
 
     public ClaimDTO saveClaim(ClaimRequest claimRequest) {
-        Claim savedClaim = Claim.builder()
-                .identifier(claimRequest.getIdentifier())
-                .name(claimRequest.getName())
-                .content(claimRequest.getContent())
-                .status(StatusE.CREATED)
-                .build();
-
+        Claim savedClaim = claimMapper.reqToClaim(claimRequest);
+        savedClaim.setStatus(StatusE.CREATED);
         Claim claim = claimRepository.save(savedClaim);
 
-        historyRepository.save(History.builder()
-                .claim(savedClaim)
-                .actionClaim(ActionE.CREATE).build());
+        historyService.archive(ActionE.CREATE, savedClaim);
 
         return claimMapper.claimToDto(claim);
     }
@@ -70,19 +61,14 @@ public class ClaimFacade {
 
         //TODO validation only if claim status is CREATED, VERIFIED
         boolean isContentChanged = !claimContent.equals(claim.getContent());
-        if (isContentChanged
-                && !StatusE.CREATED.equals(claim.getStatus())
-                && !StatusE.VERIFIED.equals(claim.getStatus())) {
+        if (isContentChanged && claim.isNotInStatus(StatusE.CREATED) && claim.isNotInStatus(StatusE.VERIFIED)) {
             throw new ClaimContentCannotBeChangedException();
         }
 
         claimMapper.updateClaimFromDto(ClaimDTO.builder().content(claimContent).build(), claim);
         Claim updatedClaim = claimRepository.save(claim);
 
-        historyRepository.save(History.builder()
-                .claim(updatedClaim)
-                .actionClaim(ActionE.EDIT).build());
-
+        historyService.archive(ActionE.EDIT, updatedClaim);
         return claimMapper.claimToDto(updatedClaim);
     }
 
@@ -94,29 +80,32 @@ public class ClaimFacade {
         StatusE status = claim.getStatus();
         if (claimProcessRequest.getAction().isPositive) {
             status = status.positiveProcess();
-            historyRepository.save(History.builder()
-                    .claim(claim)
-                    .actionClaim(claimProcessRequest.getAction())
-                    .build());
-            if (ActionE.PUBLISH.equals(claimProcessRequest.getAction())){
-                claim.setSharingNumber(SharingNumber.builder().uuid(UUID.randomUUID().toString()).build());
-            }
+
+            historyService.archive(claimProcessRequest.getAction(), claim);
+            addSharingNumberIfActionPublish(claimProcessRequest, claim);
         } else {
-            if (claimProcessRequest.getOptionalReason() == null)
-                throw new ReasonForActionRequired("Reason cannot be null.");
+            optionalReasonCannotBeNull(claimProcessRequest);
 
             status = status.negativeProcess();
-            historyRepository.save(History.builder()
-                    .claim(claim)
-                    .actionClaim(claimProcessRequest.getAction())
-                    .optionalReason(claimProcessRequest.getOptionalReason())
-                    .build());
+            historyService.archiveWithReason(claimProcessRequest.getAction(), claim, claimProcessRequest.getOptionalReason());
         }
+
         claim.setStatus(status);
         Claim updatedClaim = claimRepository.save(claim);
 
         return claimMapper.claimToDto(updatedClaim);
 
+    }
+
+    private void optionalReasonCannotBeNull(ClaimProcessRequest claimProcessRequest) throws ReasonForActionRequired {
+        if (claimProcessRequest.getOptionalReason() == null)
+            throw new ReasonForActionRequired("Reason cannot be null.");
+    }
+
+    private void addSharingNumberIfActionPublish(ClaimProcessRequest claimProcessRequest, Claim claim) {
+        if (ActionE.PUBLISH.equals(claimProcessRequest.getAction())){
+            claim.setSharingNumber(SharingNumber.builder().uuid(UUID.randomUUID().toString()).build());
+        }
     }
 
 }

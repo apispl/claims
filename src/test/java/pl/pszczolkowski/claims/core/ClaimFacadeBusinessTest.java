@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DataJpaTest
-@Import(ClaimFacade.class)
+@Import({ClaimFacade.class, HistoryService.class})
 class ClaimFacadeBusinessTest {
 
     @Autowired
@@ -33,77 +33,68 @@ class ClaimFacadeBusinessTest {
 
     @Test
     void shouldCreateClaim() throws ClaimNotFoundException {
-        ClaimRequest claimRequest = ClaimRequest.builder()
-                .identifier("claim/1")
-                .name("Government Claim")
-                .content("This is the content of Government Claim")
-                .build();
+        //given
+        saveClaim();
 
-        claimFacade.saveClaim(claimRequest);
-
+        //when
         ClaimDTO claimDTO = claimFacade.getClaimByIdentifier("claim/1");
 
+        //then
         assertThat(claimDTO.getContent()).isNotEmpty();
         assertThat(claimDTO.getName()).isNotEmpty();
     }
 
     @Test
     void shouldNotCreateClaim_emptyNameOrContent() {
+        //given
         ClaimRequest claimRequest = ClaimRequest.builder().build();
 
+        //when
         DataIntegrityViolationException dataIntegrityViolationException =
                 assertThrows(DataIntegrityViolationException.class, () -> claimFacade.saveClaim(claimRequest));
 
+        //then
         assertNotNull(dataIntegrityViolationException);
     }
 
     @Test
     void shouldEditClaim() throws ClaimContentCannotBeChangedException, ClaimNotFoundException {
-        ClaimRequest claimRequest = ClaimRequest.builder()
-                .identifier("claim/1")
-                .name("Government Claim")
-                .content("This is the content of Government Claim")
-                .build();
+        //given
+        ClaimDTO claimDTO = saveClaim();
 
-        ClaimDTO claimDTO = claimFacade.saveClaim(claimRequest);
-
+        //when
         ClaimDTO responseClaimDto = claimFacade.editClaim(claimDTO.getIdentifier(), "EDITED");
 
+        //then
         assertThat(responseClaimDto.getContent()).isEqualTo("EDITED");
     }
 
     @Test
     void shouldNotEditClaim() throws ClaimNotFoundException, ClaimProcessingException, ReasonForActionRequired {
-        ClaimRequest claimRequest = ClaimRequest.builder()
-                .identifier("claim/1")
-                .name("Government Claim")
-                .content("This is the content of Government Claim")
-                .build();
+        //given
+        ClaimDTO claimDTO = saveClaim();
 
-        ClaimDTO claimDTO = claimFacade.saveClaim(claimRequest);
-
+        //when
         claimFacade.process(ClaimProcessRequest.builder()
                 .claimIdentifier("claim/1")
                 .action(ActionE.VERIFY).build());
+        //and
         claimFacade.process(ClaimProcessRequest.builder()
                 .claimIdentifier("claim/1")
                 .action(ActionE.ACCEPT).build());
-
+        //and
         claimDTO.setContent("EDITED");
 
+        //then
         assertThrows(ClaimContentCannotBeChangedException.class, () -> claimFacade.editClaim(claimDTO.getIdentifier(), "EDITED"));
     }
 
     @Test
     void shouldSaveReason_WhenProcessNegative() throws ClaimNotFoundException, ClaimProcessingException, ReasonForActionRequired {
-        ClaimRequest claimRequest = ClaimRequest.builder()
-                .identifier("claim/1")
-                .name("Government Claim")
-                .content("This is the content of Government Claim")
-                .build();
+        //given
+        saveClaim();
 
-        claimFacade.saveClaim(claimRequest);
-
+        //when
         claimFacade.process(ClaimProcessRequest.builder()
                 .claimIdentifier("claim/1")
                 .optionalReason("reason")
@@ -111,6 +102,7 @@ class ClaimFacadeBusinessTest {
 
         List<History> allByClaim_identifier = historyRepository.findAllByClaim_Identifier("claim/1");
 
+        //then
         assertThat(allByClaim_identifier)
                 .anySatisfy(history -> {
                     assertThat(history.getOptionalReason()).isEqualTo("reason");
@@ -119,14 +111,10 @@ class ClaimFacadeBusinessTest {
 
     @Test
     void shouldNotSaveReason_WhenProcessNegative() {
-        ClaimRequest claimRequest = ClaimRequest.builder()
-                .identifier("claim/1")
-                .name("Government Claim")
-                .content("This is the content of Government Claim")
-                .build();
+        //given
+        saveClaim();
 
-        claimFacade.saveClaim(claimRequest);
-
+        //when/then
         assertThrows(ReasonForActionRequired.class, () -> claimFacade.process(ClaimProcessRequest.builder()
                 .claimIdentifier("claim/1")
                 .action(ActionE.DELETE).build()));
@@ -134,14 +122,10 @@ class ClaimFacadeBusinessTest {
 
     @Test
     void shouldAddSharingNumber_WhenPublish() throws ReasonForActionRequired, ClaimNotFoundException, ClaimProcessingException {
-        ClaimRequest claimRequest = ClaimRequest.builder()
-                .identifier("claim/1")
-                .name("Government Claim")
-                .content("This is the content of Government Claim")
-                .build();
+        //given
+        saveClaim();
 
-        claimFacade.saveClaim(claimRequest);
-
+        //when
         claimFacade.process(ClaimProcessRequest.builder()
                 .claimIdentifier("claim/1")
                 .optionalReason("reason")
@@ -159,6 +143,17 @@ class ClaimFacadeBusinessTest {
 
         ClaimDTO claimByIdentifier = claimFacade.getClaimByIdentifier("claim/1");
 
+        //then
         assertThat(claimByIdentifier.getSharingNumber()).isNotNull();
+    }
+
+    private ClaimDTO saveClaim() {
+        ClaimRequest claimRequest = ClaimRequest.builder()
+                .identifier("claim/1")
+                .name("Government Claim")
+                .content("This is the content of Government Claim")
+                .build();
+
+        return claimFacade.saveClaim(claimRequest);
     }
 }

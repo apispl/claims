@@ -8,6 +8,8 @@ class ClaimConfiguration {
 
     @Bean
     ClaimFacade claimFacade(ClaimRepository claimRepository, HistoryRepository historyRepository) {
-        return new ClaimFacade(claimRepository, historyRepository);
+        HistoryService historyService = new HistoryService(historyRepository);
+
+        return new ClaimFacade(claimRepository, historyService);
     }
 }

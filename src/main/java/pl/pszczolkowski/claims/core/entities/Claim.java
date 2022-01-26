@@ -48,4 +48,11 @@ public class Claim {
     @JoinColumn(name = "sharing_number_id", referencedColumnName = "id")
     private SharingNumber sharingNumber;
 
+    public boolean isInStatus(StatusE status) {
+        return this.status.equals(status);
+    }
+
+    public boolean isNotInStatus(StatusE status) {
+        return !this.status.equals(status);
+    }
 }

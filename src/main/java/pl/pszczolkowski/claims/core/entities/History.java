@@ -33,7 +33,7 @@ public class History {
     @JoinColumn(name = "claim_id", nullable = false)
     private Claim claim;
 
-    private LocalDateTime actionTime = LocalDateTime.now();
+    private LocalDateTime actionTime;
 
     @Enumerated(EnumType.STRING)
     private ActionE actionClaim;
