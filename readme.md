@@ -1,3 +1,2 @@
 Założenia
-1. Nazwy wniosków są unikalne
-2. 
+1. Każdemu wnioskowi nadano unikalny identyfikator
